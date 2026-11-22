@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111f">
+<title>J.A.R.V.I.S</title>
+<style>
+:root{color-scheme:dark;--bg:#050b14;--panel:#0b1726;--panel2:#101f31;--line:#20364c;--text:#e8f2ff;--muted:#8fa6bd;--cyan:#5ce1e6;--blue:#4da3ff;--danger:#ff7c86}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% -20%,#12304a 0%,var(--bg) 55%);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif;min-height:100dvh}
+.app{max-width:900px;margin:auto;min-height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom)}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 2px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:42px;height:42px;border:1px solid #3e9db0;border-radius:50%;display:grid;place-items:center;color:var(--cyan);box-shadow:0 0 22px #38c7db35;font-weight:800;letter-spacing:1px}
+h1{font-size:17px;letter-spacing:2px;margin:0}
+.sub{font-size:11px;color:var(--muted);margin-top:3px}
+.actions{display:flex;gap:7px}
+button{font:inherit;cursor:pointer}
+.smallbtn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:8px 10px;font-size:12px}
+.status{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px;padding:10px 2px}
+.dot{width:7px;height:7px;border-radius:50%;background:#50d69a;box-shadow:0 0 9px #50d69a}
+.chat{flex:1;overflow:auto;padding:12px 0 20px;display:flex;flex-direction:column;gap:15px;min-height:220px}
+.welcome{text-align:center;margin:auto;padding:30px 12px;color:var(--muted);max-width:460px}
+.core{width:76px;height:76px;border:1px solid #3c9eb2;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;color:var(--cyan);font-size:26px;box-shadow:0 0 35px #36d5e455,inset 0 0 20px #36d5e422}
+.welcome h2{color:var(--text);font-size:20px;margin:0 0 8px}
+.welcome p{font-size:14px;line-height:1.7}
+.msg{display:flex;gap:9px;align-items:flex-start;max-width:100%}
+.msg.user{flex-direction:row-reverse}
+.avatar{flex:0 0 29px;height:29px;border-radius:50%;display:grid;place-items:center;background:#10283b;color:var(--cyan);font-size:11px;border:1px solid var(--line)}
+.user .avatar{background:#18304a;color:#b7d7ff}
+.bubble{max-width:min(82%,680px);padding:11px 13px;border:1px solid var(--line);border-radius:14px;background:var(--panel);line-height:1.65;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.user .bubble{background:#10253b;border-color:#254c70}
+.composer{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 18%);padding:14px 0 calc(12px + env(safe-area-inset-bottom))}
+.tools{display:flex;align-items:center;gap:8px;border:1px solid #29435d;background:#0b1726;border-radius:17px;padding:8px}
+#prompt{flex:1;min-width:0;max-height:130px;resize:none;border:0;outline:0;background:transparent;color:var(--text);font:inherit;font-size:14px;padding:8px}
+#prompt::placeholder{color:#7890a8}
+.toolbtn{width:39px;height:39px;border-radius:12px;border:1px solid var(--line);background:#102238;color:var(--text);font-size:17px}
+#send{background:linear-gradient(135deg,#2b9eb9,#3977ce);border:0;font-weight:700}
+#send:disabled{opacity:.45}
+.hint{text-align:center;color:#71869b;font-size:10px;padding-top:8px}
+.error{color:#ffadb3;border-color:#713b49;background:#27131c}
+.typing{color:var(--muted);font-size:12px;padding:0 4px}
+@media(min-width:700px){.app{padding-left:24px;padding-right:24px}.bubble{font-size:15px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><div class="logo">J</div><div><h1>J.A.R.V.I.S</h1><div class="sub">PERSONAL AI ASSISTANT</div></div></div>
+  <div class="actions"><button class="smallbtn" id="newChat">＋ নতুন চ্যাট</button><button class="smallbtn" id="voiceToggle" aria-label="Voice output">🔊</button></div>
+</header>
+<div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Backend সংযোগ পরীক্ষা হচ্ছে…</span></div>
+<main class="chat" id="chat">
+  <section class="welcome" id="welcome"><div class="core">J</div><h2>স্বাগতম, Sir.</h2><p>আমি J.A.R.V.I.S. আপনার প্রশ্ন লিখুন অথবা মাইক্রোফোনে কথা বলুন।</p></section>
+</main>
+<div class="composer">
+  <div class="tools">
+    <button class="toolbtn" id="mic" title="কথা বলুন">🎙️</button>
+    <textarea id="prompt" rows="1" placeholder="JARVIS-কে কিছু জিজ্ঞেস করুন…"></textarea>
+    <button class="toolbtn" id="send" title="পাঠান">➤</button>
+  </div>
+  <div class="hint">Enter = পাঠান · Shift + Enter = নতুন লাইন · Voice recognition browser support-এর ওপর নির্ভরশীল</div>
+</div>
+</div>
+<script>
+const chatEl=document.getElementById("chat");
+const promptEl=document.getElementById("prompt");
+const sendBtn=document.getElementById("send");
+const micBtn=document.getElementById("mic");
+const statusText=document.getElementById("statusText");
+const statusDot=document.getElementById("statusDot");
+const voiceToggle=document.getElementById("voiceToggle");
+let messages=[];
+let busy=false;
+let voiceOn=true;
+let recognition=null;
+
+function setStatus(text,ok=true){statusText.textContent=text;statusDot.style.background=ok?"#50d69a":"#ff7c86";statusDot.style.boxShadow=ok?"0 0 9px #50d69a":"0 0 9px #ff7c86";}
+function removeWelcome(){document.getElementById("welcome")?.remove();}
+function addMessage(role,text,isError=false){
+  removeWelcome();
+  const row=document.createElement("div");row.className="msg "+(role==="user"?"user":"assistant");
+  const avatar=document.createElement("div");avatar.className="avatar";avatar.textContent=role==="user"?"YOU":"J";
+  const bubble=document.createElement("div");bubble.className="bubble"+(isError?" error":"");bubble.textContent=text;
+  row.append(avatar,bubble);chatEl.append(row);chatEl.scrollTop=chatEl.scrollHeight;return bubble;
+}
+function speak(text){
+  if(!voiceOn||!("speechSynthesis" in window))return;
+  window.speechSynthesis.cancel();
+  const utterance=new SpeechSynthesisUtterance(text);
+  utterance.lang=/[\u0980-\u09FF]/.test(text)?"bn-BD":"en-US";
+  utterance.rate=1;window.speechSynthesis.speak(utterance);
+}
+async function checkBackend(){
+  try{const r=await fetch("/api/health");if(!r.ok)throw new Error();const d=await r.json();setStatus("Online · "+d.model);}
+  catch{setStatus("Backend সংযোগ পাওয়া যায়নি",false);}
+}
+async function sendMessage(){
+  const text=promptEl.value.trim();if(!text||busy)return;
+  busy=true;sendBtn.disabled=true;promptEl.value="";promptEl.style.height="auto";
+  messages.push({role:"user",text});addMessage("user",text);
+  const loading=addMessage("model","JARVIS ভাবছে…");
+  try{
+    const response=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages})});
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||"উত্তর পাওয়া যায়নি।");
+    loading.textContent=data.reply;messages.push({role:"model",text:data.reply});speak(data.reply);
+    setStatus("Online · "+(data.model||"Gemini"));
+  }catch(err){
+    loading.textContent=err.message;loading.classList.add("error");
+    messages.pop();setStatus("উত্তরে সমস্যা হয়েছে",false);
+  }finally{busy=false;sendBtn.disabled=false;chatEl.scrollTop=chatEl.scrollHeight;}
+}
+sendBtn.addEventListener("click",sendMessage);
+promptEl.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}});
+promptEl.addEventListener("input",()=>{promptEl.style.height="auto";promptEl.style.height=Math.min(promptEl.scrollHeight,130)+"px";});
+document.getElementById("newChat").addEventListener("click",()=>{
+  if(busy)return;messages=[];chatEl.innerHTML='<section class="welcome" id="welcome"><div class="core">J</div><h2>স্বাগতম, Sir.</h2><p>আমি J.A.R.V.I.S. আপনার প্রশ্ন লিখুন অথবা মাইক্রোফোনে কথা বলুন।</p></section>';window.speechSynthesis?.cancel();
+});
+voiceToggle.addEventListener("click",()=>{voiceOn=!voiceOn;voiceToggle.textContent=voiceOn?"🔊":"🔇";if(!voiceOn)window.speechSynthesis?.cancel();});
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SpeechRecognition){
+  recognition=new SpeechRecognition();recognition.lang="bn-BD";recognition.interimResults=false;recognition.maxAlternatives=1;
+  recognition.onstart=()=>{micBtn.textContent="⏺️";setStatus("শুনছি…");};
+  recognition.onend=()=>{micBtn.textContent="🎙️";checkBackend();};
+  recognition.onerror=e=>{setStatus("মাইক্রোফোন সমস্যা: "+e.error,false);};
+  recognition.onresult=e=>{promptEl.value=e.results[0][0].transcript;sendMessage();};
+  micBtn.addEventListener("click",()=>{try{recognition.start();}catch{}});
+}else{
+  micBtn.addEventListener("click",()=>addMessage("model","এই browser-এ Speech Recognition সমর্থিত নয়। Chrome-এ চেষ্টা করুন।",true));
+}
+checkBackend();
+</script>
+</body>
+</html>
